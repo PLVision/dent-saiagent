@@ -1,0 +1,65 @@
+Supported distro/kernel
+=======================
+- Debian 10
+- Linux 5.15.x
+
+Install deps
+============
+
+  sudo apt install libnl-3-dev libnl-genl-3-dev
+
+Build steps
+===========
+
+  ./bootstrap.sh
+  ./configure \
+  LIBSAI_CFLAGS="-I<SAI_REPO_DIR>/inc -I<SAI_REPO_DIR>/sai/experimental" \
+  LIBSAI_LDFLAGS="-L<SAI_LIB_DIR>"
+  make
+  make check
+
+where,
+
+  SAI_REPO_DIR - SAI headers location
+  SAI_LIB_DIR  - SAI library location
+
+Build Prestera driver
+=====================
+
+Clone DENT Linux kernel sources (or just download to save some time)
+
+  git clone https://github.com/PLVision/dent-linux.git -b dent-linux-5.15.y-netlink
+
+or
+
+  wget https://github.com/PLVision/dent-linux/archive/refs/heads/dent-linux-5.15.y-netlink.zip
+  unzip dent-linux-5.15.y-netlink.zip
+
+Install deps
+
+  sudo apt-get install build-essential bc kmod cpio flex libncurses5-dev libelf-dev libssl-dev dwarves bison
+
+Install 5.15x kernel headers (refer to distro documentation)
+
+Build
+
+  cd dent-linux/drivers/net/ethernet/marvell/prestera/
+  export CONFIG_PRESTERA=m
+  export CONFIG_SWDEVSAI_NL=m
+  make -C /lib/modules/`uname -r`/build M=$PWD modules
+
+Execute SAI agent
+=================
+
+Load Prestera driver
+
+  cd dent-linux/drivers/net/ethernet/marvell/prestera
+  sudo insmod prestera.ko
+  sudo insmod swdevsai_nl.ko
+
+Run SAI Agent
+
+  <SAIAGENT_DIR>/src/saiagent -p <SAI_PROFILE>
+
+where,
+  SAI_PROFILE - is SAI profile, usually 'sai.profile' file.
